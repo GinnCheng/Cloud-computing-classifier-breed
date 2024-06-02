@@ -187,7 +187,8 @@ class sparkify_model:
         bestModel.save(output_path)
 
 
-sparkify_model().train_model()
+clf = sparkify_model()
+clf.train_model()
 
 
 
