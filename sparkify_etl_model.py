@@ -189,7 +189,8 @@ class sparkify_model:
 
 clf = sparkify_model()
 clf.train_model()
-
+# Stop the Spark session
+spark.stop()
 
 
 
