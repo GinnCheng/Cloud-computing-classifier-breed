@@ -16,6 +16,7 @@ spark = SparkSession.builder \
 file_path = "mini_sparkify_event_data.json"
 # read the data via spark
 sc = spark.read.json(file_path)
+output_path = './bestModel'
 
 # Convert data types
 columns_to_cast = {
@@ -148,7 +149,7 @@ class sparkify_model:
         self.impurity = impurity
         self.maxDepth = maxDepth
 
-    def train_model(self, train_data=train_data, valid_data=valid_data):
+    def train_model(self, train_data=train_data, valid_data=valid_data, output_path=output_path):
         # Assemble features into a single vector
         assembler = VectorAssembler(inputCols=self.features, outputCol='features')
         # Define the classifier
@@ -183,7 +184,7 @@ class sparkify_model:
         print(f"Model Accuracy: {accuracy}")
         # save the model
         bestModel = cvModel.bestModel
-        bestModel.save('./bestModel')
+        bestModel.save(output_path)
 
 
 sparkify_model().train_model()
