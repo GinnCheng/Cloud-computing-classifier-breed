@@ -100,8 +100,14 @@ def analysing_data(sc):
     mid_ratio = 2 * 34.3 * min_count / mid_count
     max_ratio = 2 * 34.3 * min_count / max_count
     # select the data based on the churns
-    churn_0 = sc_cl.where(sc_cl.churn == 0).sample(withReplacement=False, fraction=max_ratio, seed=42)
-    churn_1 = sc_cl.where(sc_cl.churn == 1).sample(withReplacement=False, fraction=mid_ratio, seed=42)
+    try:
+        churn_0 = sc_cl.where(sc_cl.churn == 0).sample(withReplacement=False, fraction=max_ratio, seed=42)
+    except:
+        churn_0 = sc_cl.where(sc_cl.churn == 0)
+    try:
+        churn_1 = sc_cl.where(sc_cl.churn == 1).sample(withReplacement=False, fraction=mid_ratio, seed=42)
+    except:
+        churn_1 = sc_cl.where(sc_cl.churn == 1)
     churn_2 = sc_cl.where(sc_cl.churn == 2)
     # merge the data
     sc_cl = churn_0.union(churn_1.union(churn_2))
