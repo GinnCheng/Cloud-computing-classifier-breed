@@ -107,8 +107,8 @@ def predicting_users(file_path='./mini_sparkify_event_data.json', model_path="./
     spark.stop()
 
     # Return the results as HTML
-    return predictions_df
-    # return predictions_df.to_html()
+    # return predictions_df
+    return predictions_df.to_html()
 
 if __name__ == '__main__':
     file_path = '../../../Datasets/UdacityCapstoneSpark/mini_sparkify_event_data.json'
