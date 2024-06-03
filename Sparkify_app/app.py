@@ -20,7 +20,7 @@ def upload_file():
     if file:
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
         file.save(file_path)
-        results = analyze_data(file_path)
+        results = predicting_users(file_path)
         return render_template('results.html', results=results)
     return redirect(request.url)
 
