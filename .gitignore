@@ -2,3 +2,5 @@ DataWrangling/*
 Hadoop/*
 MachineLearning/*
 .*/*
+Sparkify_app/*.zip
+Sparkify_app/model
