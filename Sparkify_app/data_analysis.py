@@ -23,7 +23,7 @@ spark = SparkSession.builder.appName('FlaskApp').getOrCreate()
 # Load the pre-trained Spark model
 model = PipelineModel.load('model/your_spark_model_directory')
 
-def analysing_data(file_path='./mini_sparkify_event_data.json', output_path='./bestModelFinal'):
+def predicting_users(file_path='./mini_sparkify_event_data.json', output_path='./bestModelFinal'):
 
     # read the data via spark
     sc = spark.read.json(file_path)
