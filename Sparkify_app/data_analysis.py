@@ -29,6 +29,15 @@ import shutil
 # Initialize Spark session
 spark = SparkSession.builder.appName('FlaskApp').getOrCreate()
 
+def prediction_accuracy(x, y):
+    if (x == 'Cancel Confirmation') and (y == 2):
+        result = True
+    elif (x == 'Downgrad') and (y == 1):
+        result = True
+    else:
+        result = False
+    return result
+
 def predicting_users(file_path='./mini_sparkify_event_data.json', model_path="./final_model.zip"):
 
     # Load the pre-trained Spark model
@@ -64,7 +73,7 @@ def predicting_users(file_path='./mini_sparkify_event_data.json', model_path="./
     for col in sc.columns:
         sc.withColumn(col, to_lower_coln(col))
     # select the relevant columns
-    coln_selected = ['userId', 'gender', 'itemInSession', 'level', 'length']
+    coln_selected = ['userId', 'gender', 'itemInSession', 'level', 'length', 'page']
     sc = sc.select(coln_selected)
     # drop na and duplicated
     sc_cl = sc.dropna()
@@ -87,6 +96,13 @@ def predicting_users(file_path='./mini_sparkify_event_data.json', model_path="./
     # list the potential downgrade and cancel confirmation
     predictions_df = predictions_df[predictions_df.churn_pred.isin([1, 2])]
     predictions_df.drop(columns=['features', 'rawPrediction', 'probability'], inplace=True)
+
+    # check if the prediction accuracy
+    predictions_df['correct_prediction'] =\
+        predictions_df[['page', 'churn_pred']].apply(prediction_accuracy)
+
+    accuracy_percent = predictions_df.correct_prediction.sum()/predictions_df.shape[0]*100
+    print(f'The accuracy is {accuracy_percent} %')
 
     # Return the results as HTML
     return predictions_df.to_html()
