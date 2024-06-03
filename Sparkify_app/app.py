@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
-from data_analysis import analyze_data
+from data_analysis import predicting_users
 import os
 
 app = Flask(__name__)
