@@ -97,8 +97,8 @@ def analysing_data(sc):
     min_count = min(churn_counts)
     mid_count = [x for x in churn_counts if x not in [max_count, min_count]][0]
     # Calculate weights
-    mid_ratio = 2 * min_count / mid_count
-    max_ratio = 2 * min_count / max_count
+    mid_ratio = 2 * 34.3 * min_count / mid_count
+    max_ratio = 2 * 34.3 * min_count / max_count
     # select the data based on the churns
     churn_0 = sc_cl.where(sc_cl.churn == 0).sample(withReplacement=False, fraction=max_ratio, seed=42)
     churn_1 = sc_cl.where(sc_cl.churn == 1).sample(withReplacement=False, fraction=mid_ratio, seed=42)
