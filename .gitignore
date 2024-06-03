@@ -4,3 +4,4 @@ MachineLearning/*
 .*/*
 Sparkify_app/*.zip
 Sparkify_app/model
+Sparkify_app/uploads
