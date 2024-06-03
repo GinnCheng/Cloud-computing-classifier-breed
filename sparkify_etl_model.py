@@ -32,7 +32,7 @@ spark = SparkSession.builder \
 file_path = "mini_sparkify_event_data.json"
 # read the data via spark
 sc = spark.read.json(file_path)
-output_path = './bestModel'
+output_path = './bestModelFinal'
 # Convert data types
 columns_to_cast = {
     "userId": "Integer",
