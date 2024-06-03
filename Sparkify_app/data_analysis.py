@@ -26,19 +26,18 @@ from pyspark.sql.functions import split, explode
 from pyspark.ml import PipelineModel
 import shutil
 
-# Initialize Spark session
-spark = SparkSession.builder.appName('FlaskApp').getOrCreate()
-
-def prediction_accuracy(x, y):
-    if (x == 'Cancel Confirmation') and (y == 2):
+def prediction_accuracy(row):
+    if (row['page'] == 'Cancellation Confirmation') and (row['churn_pred'] == 2):
         result = True
-    elif (x == 'Downgrad') and (y == 1):
+    elif (row['page'] == 'Downgrade') and (row['churn_pred'] == 1):
         result = True
     else:
         result = False
     return result
 
 def predicting_users(file_path='./mini_sparkify_event_data.json', model_path="./final_model.zip"):
+    # Initialize Spark session
+    spark = SparkSession.builder.appName('FlaskApp').getOrCreate()
 
     # Load the pre-trained Spark model
     shutil.unpack_archive(model_path, "./model")
@@ -99,10 +98,20 @@ def predicting_users(file_path='./mini_sparkify_event_data.json', model_path="./
 
     # check if the prediction accuracy
     predictions_df['correct_prediction'] =\
-        predictions_df[['page', 'churn_pred']].apply(prediction_accuracy)
+        predictions_df[['page', 'churn_pred']].apply(prediction_accuracy, axis=1)
 
     accuracy_percent = predictions_df.correct_prediction.sum()/predictions_df.shape[0]*100
     print(f'The accuracy is {accuracy_percent} %')
 
+    # stop spark
+    spark.stop()
+
     # Return the results as HTML
-    return predictions_df.to_html()
+    return predictions_df
+    # return predictions_df.to_html()
+
+if __name__ == '__main__':
+    file_path = '../../../Datasets/UdacityCapstoneSpark/mini_sparkify_event_data.json'
+    pred = predicting_users(file_path=file_path)
+    print(pred.page.unique())
+    print(pred.correct_prediction.unique())
