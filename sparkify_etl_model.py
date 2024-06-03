@@ -46,10 +46,17 @@ spark = SparkSession.builder \
 sc = spark.read.json(file_path)
 
 class DataWranglingTransformer(Transformer, DefaultParamsReadable, DefaultParamsWritable):
+    """
+    Custom transformer for data wrangling in a PySpark pipeline.
+    """
     def __init__(self):
         super(DataWranglingTransformer, self).__init__()
 
     def _transform(self, sc: DataFrame) -> DataFrame:
+
+        """
+        Applies data wrangling transformations to the input DataFrame.
+        """
 
         # Convert data types
         columns_to_cast = {
@@ -167,6 +174,10 @@ class DataWranglingTransformer(Transformer, DefaultParamsReadable, DefaultParams
 
 
 class sparkify_model:
+
+    """
+    Class for training a machine learning model on the Sparkify dataset.
+    """
     def __init__(self, features=['gender', 'itemInSession', 'level', 'length'],
                  impurity=['gini', 'entropy'],
                  maxDepth=[1, 3, 5]):
@@ -176,6 +187,11 @@ class sparkify_model:
         self.maxDepth = maxDepth
 
     def train_model(self, train_data, valid_data, test_data):
+
+        """
+        Train a RandomForest model using the given training data.
+        """
+
         # assembel the wrangler transformer
         data_wrangler = DataWranglingTransformer()
         # Assemble features into a single vector
