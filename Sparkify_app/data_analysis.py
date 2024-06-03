@@ -1,3 +1,11 @@
+"""
+data_analysis.py: Load the machine learning model for churn prediction.
+
+This module predicts user churn based on user activity data.
+
+"""
+
+
 # import libraries
 import pyspark
 from pyspark.sql import SparkSession

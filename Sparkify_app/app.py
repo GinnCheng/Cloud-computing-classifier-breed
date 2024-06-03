@@ -1,3 +1,19 @@
+"""
+app.py: Flask web application for Sparkify churn prediction.
+
+This module initializes a Flask web application that serves a machine learning model for predicting user churn for Sparkify. The application provides endpoints for submitting user data and getting churn predictions.
+
+Usage:
+    Run this script to start the web server:
+    $ python app.py
+
+Endpoints:
+    - /: Renders the home page.
+    - /predict: Accepts user data and returns churn prediction.
+"""
+
+
+
 from flask import Flask, render_template, request, redirect, url_for
 from data_analysis import predicting_users
 import os
