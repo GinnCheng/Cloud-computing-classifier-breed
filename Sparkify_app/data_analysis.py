@@ -24,22 +24,23 @@ import datetime
 from pyspark.ml.feature import StringIndexer, OneHotEncoder
 from pyspark.sql.functions import split, explode
 from pyspark.ml import PipelineModel
-import pickle
+import shutil
 
 # Initialize Spark session
 spark = SparkSession.builder.appName('FlaskApp').getOrCreate()
 
 # Load the pre-trained Spark model
-model_path = 'model/your_spark_model_directory'
-with open(model_path, 'rb') as f:
-    model = pickle.load(f)
+shutil.unpack_archive("./final_model.zip", "./model")
+model = PipelineModel.load('./model')
 
 def predicting_users(file_path='./mini_sparkify_event_data.json', output_path='./bestModelFinal'):
 
     # read the data via spark
+    print('reading the data ...')
     sc = spark.read.json(file_path)
 
     # Convert data types
+    print('cleaning the data ...')
     columns_to_cast = {
         "userId": "Integer",
         "length": "Double"
@@ -71,12 +72,13 @@ def predicting_users(file_path='./mini_sparkify_event_data.json', output_path='.
     # indexing the strings
     for col in ['gender', 'itemInSession', 'level', 'length']:
         if sc_cl.select(col).dtypes[0][1] == 'string':
-            print(col, ':', sc_cl.select(col).dtypes[0][1])
+            # print(col, ':', sc_cl.select(col).dtypes[0][1])
             indexer = StringIndexer(inputCol=col, outputCol=col + "_index")
             sc_cl = indexer.fit(sc_cl).transform(sc_cl)
             sc_cl = sc_cl.drop(col).withColumnRenamed(col + "_index", col)
 
     # Make predictions
+    print('predicting the data ...')
     predictions = model.transform(sc_cl)
 
     # Convert predictions to Pandas DataFrame for easy rendering
