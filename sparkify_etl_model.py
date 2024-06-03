@@ -5,8 +5,15 @@ from pyspark.sql.functions import col, udf, count, sum as sql_sum, avg, when
 from pyspark.ml.feature import VectorAssembler
 from pyspark.ml.classification import LogisticRegression
 from pyspark.ml.evaluation import BinaryClassificationEvaluator
-import matplotlib.pyplot as plt
-import seaborn as sns
+from pyspark.sql.types import StringType
+from pyspark.sql.functions import split, explode
+import datetime
+from pyspark.ml.feature import StringIndexer, OneHotEncoder
+from pyspark.ml import Pipeline
+from pyspark.ml.classification import RandomForestClassifier
+from pyspark.ml.evaluation import MulticlassClassificationEvaluator
+from pyspark.ml.feature import StringIndexer, VectorAssembler
+from pyspark.ml.tuning import CrossValidator, ParamGridBuilder
 
 # create a Spark session
 spark = SparkSession.builder \
@@ -43,7 +50,6 @@ sc_filled = sc_filled.drop('length','mean_length').withColumnRenamed('length_fil
 sc = sc_filled
 
 # rename the column names
-from pyspark.sql.types import StringType
 to_lower_coln = udf(lambda x: x.lower(), StringType())
 
 for col in sc.columns:
@@ -62,7 +68,6 @@ to_label_churn = udf(lambda x: 2 if x == 'Cancellation Confirmation' else 1 if x
 sc_cl = sc_cl.withColumn('churn', to_label_churn(sc_cl.page))
 
 # convert time
-import datetime
 get_year = udf(lambda x: datetime.datetime.fromtimestamp(x / 1000.0). year)
 get_month = udf(lambda x: datetime.datetime.fromtimestamp(x / 1000.0). month)
 get_day = udf(lambda x: datetime.datetime.fromtimestamp(x / 1000.0). day)
@@ -92,14 +97,12 @@ to_extract_state = udf(lambda s: s.split(',')[1].strip() if ',' in s else s)
 
 sc_cl = sc_cl.withColumn('state', to_extract_state(sc_cl.location))
 
-from pyspark.sql.functions import split, explode
+
 sc_cl2 = sc_cl.withColumn('states', split(sc_cl.state, "-"))
 sc_cl2 = sc_cl2.withColumn('state', explode(sc_cl2.states))
 sc_cl = sc_cl2.drop('states','location')
 
 # indexing the strings
-from pyspark.ml.feature import StringIndexer, OneHotEncoder
-
 # select the relevant columns
 coln_selected = ['gender', 'itemInSession', 'level', 'length', 'churn']
 sc_cl = sc_cl.select(coln_selected)
@@ -111,11 +114,6 @@ for col in sc_cl.columns:
         sc_cl = indexer.fit(sc_cl).transform(sc_cl)
         sc_cl = sc_cl.drop(col).withColumnRenamed(col + "_index", col)
 
-from pyspark.ml import Pipeline
-from pyspark.ml.classification import RandomForestClassifier
-from pyspark.ml.evaluation import MulticlassClassificationEvaluator
-from pyspark.ml.feature import StringIndexer, VectorAssembler
-from pyspark.ml.tuning import CrossValidator, ParamGridBuilder
 
 # Calculate the number of instances for each class
 class_counts = sc_cl.groupBy('churn').count().collect()
