@@ -25,6 +25,14 @@ from pyspark.ml.classification import LogisticRegression
 from pyspark.ml.evaluation import BinaryClassificationEvaluator
 import matplotlib.pyplot as plt
 import seaborn as sns
+from pyspark.ml import Pipeline
+from pyspark.ml.classification import RandomForestClassifier
+from pyspark.ml.evaluation import MulticlassClassificationEvaluator
+from pyspark.ml.feature import StringIndexer, VectorAssembler
+from pyspark.ml.tuning import CrossValidator, ParamGridBuilder
+import datetime
+from pyspark.ml.feature import StringIndexer, OneHotEncoder
+from pyspark.sql.functions import split, explode
 
 
 def loading_data(file_path='./mini_sparkify_event_data.json', output_path='./bestModelFinal'):
@@ -58,59 +66,28 @@ def analysing_data(sc):
     for col in sc.columns:
         sc.withColumn(col, to_lower_coln(col))
     # select the relevant columns
-    coln_selected = ['gender', 'itemInSession', 'level', 'location', 'length', 'method', 'page', 'sessionId', 'status',
-                     'ts', 'userId']
-    sc_sl = sc.select(coln_selected)
+    coln_selected = ['userId', 'gender', 'itemInSession', 'level', 'length', 'page']
+    sc = sc.select(coln_selected)
     # drop na and duplicated
-    sc_cl = sc_sl.dropna()
+    sc_cl = sc.dropna()
     sc_cl = sc_cl.dropDuplicates()
     # add a column of churn
     to_label_churn = udf(lambda x: 2 if x == 'Cancellation Confirmation' else 1 if x == 'Downgrade' else 0)
     sc_cl = sc_cl.withColumn('churn', to_label_churn(sc_cl.page))
-    # convert time
-    import datetime
-    get_year = udf(lambda x: datetime.datetime.fromtimestamp(x / 1000.0).year)
-    get_month = udf(lambda x: datetime.datetime.fromtimestamp(x / 1000.0).month)
-    get_day = udf(lambda x: datetime.datetime.fromtimestamp(x / 1000.0).day)
-    get_hour = udf(lambda x: datetime.datetime.fromtimestamp(x / 1000.0).hour)
-    sc_cl = sc_cl.withColumn('year', get_year(sc_cl.ts))
-    sc_cl = sc_cl.withColumn('month', get_month(sc_cl.ts))
-    sc_cl = sc_cl.withColumn('day', get_day(sc_cl.ts))
-    sc_cl = sc_cl.withColumn('hour', get_hour(sc_cl.ts))
-    sc_cl = sc_cl.drop('ts')
     # convert the data types
     columns_to_cast = {
         'churn': 'Integer',
-        'year': 'Integer',
-        'month': 'Integer',
-        'day': 'Integer',
-        'hour': 'Integer'
     }
     for column, dtype in columns_to_cast.items():
         sc_cl = sc_cl.withColumn(column, sc_cl[column].cast(dtype))
-    # select on the state as the location
-    to_extract_state = udf(lambda s: s.split(',')[1].strip() if ',' in s else s)
-    sc_cl = sc_cl.withColumn('state', to_extract_state(sc_cl.location))
-    from pyspark.sql.functions import split, explode
-    sc_cl2 = sc_cl.withColumn('states', split(sc_cl.state, "-"))
-    sc_cl2 = sc_cl2.withColumn('state', explode(sc_cl2.states))
-    sc_cl = sc_cl2.drop('states', 'location')
     # indexing the strings
-    from pyspark.ml.feature import StringIndexer, OneHotEncoder
-    # select the relevant columns
-    coln_selected = ['gender', 'itemInSession', 'level', 'length', 'churn']
-    sc_cl = sc_cl.select(coln_selected)
-    for col in sc_cl.columns:
+    for col in ['gender', 'itemInSession', 'level', 'length']:
         if sc_cl.select(col).dtypes[0][1] == 'string':
             print(col, ':', sc_cl.select(col).dtypes[0][1])
             indexer = StringIndexer(inputCol=col, outputCol=col + "_index")
             sc_cl = indexer.fit(sc_cl).transform(sc_cl)
             sc_cl = sc_cl.drop(col).withColumnRenamed(col + "_index", col)
-    from pyspark.ml import Pipeline
-    from pyspark.ml.classification import RandomForestClassifier
-    from pyspark.ml.evaluation import MulticlassClassificationEvaluator
-    from pyspark.ml.feature import StringIndexer, VectorAssembler
-    from pyspark.ml.tuning import CrossValidator, ParamGridBuilder
+
     # Calculate the number of instances for each class
     class_counts = sc_cl.groupBy('churn').count().collect()
     churn_counts = [class_counts[0][1], class_counts[1][1], class_counts[2][1]]
