@@ -28,17 +28,14 @@ spark = SparkSession.builder \
     .appName("Sparkify Data Analysis") \
     .getOrCreate()
 
+# read the data via spark
+sc = spark.read.json(file_path)
+
 class DataWranglingTransformer(Transformer, DefaultParamsReadable, DefaultParamsWritable):
-    def __init__(self, file_path = 'mini_sparkify_event_data.json',
-                       output_path = './bestModel'):
+    def __init__(self):
         super(DataWranglingTransformer, self).__init__()
-        self.file_path = file_path
-        self.output_path = output_path
 
     def _transform(self, sc: DataFrame) -> DataFrame:
-
-        # read the data via spark
-        sc = spark.read.json(self.file_path)
 
         # Convert data types
         columns_to_cast = {
@@ -164,13 +161,15 @@ class sparkify_model:
         self.impurity = impurity
         self.maxDepth = maxDepth
 
-    def train_model(self, train_data=train_data, valid_data=valid_data, output_path=output_path):
+    def train_model(self, train_data, valid_data, test_data):
+        # assembel the wrangler transformer
+        data_wrangler = DataWranglingTransformer()
         # Assemble features into a single vector
         assembler = VectorAssembler(inputCols=self.features, outputCol='features')
         # Define the classifier
         rf = RandomForestClassifier(featuresCol='features', labelCol=self.label, predictionCol='churn_pred')
         # Create the pipeline
-        pipeline = Pipeline(stages=[DataWranglingTransformer,assembler, rf])
+        pipeline = Pipeline(stages=[data_wrangler,assembler, rf])
         # Set Up Cross-Validation
         # Define the parameter grid
         paramGrid = ParamGridBuilder() \
@@ -199,11 +198,14 @@ class sparkify_model:
         print(f"Model Accuracy: {accuracy}")
         # save the model
         bestModel = cvModel.bestModel
-        bestModel.write().overwrite().save(output_path)
+        return bestModel
 
 
+# run the pipeline
 clf = sparkify_model()
-clf.train_model()
+bestModel = clf.train_model()
+# save the model
+bestModel.write().overwrite().save(output_path)
 # Stop the Spark session
 spark.stop()
 
