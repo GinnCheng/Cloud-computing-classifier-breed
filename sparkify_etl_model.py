@@ -73,7 +73,7 @@ def analysing_data(sc):
     sc_cl = sc_cl.dropDuplicates()
     # add a column of churn
     to_label_churn = udf(lambda x: 2 if x == 'Cancellation Confirmation' else 1 if x == 'Downgrade' else 0)
-    sc_cl = sc_cl.withColumn('churn', to_label_churn(sc_cl.page))
+    sc_cl = sc_cl.withColumn('churn', to_label_churn(sc_cl.page)).drop('page')
     # convert the data types
     columns_to_cast = {
         'churn': 'Integer',
