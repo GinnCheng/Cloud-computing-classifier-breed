@@ -14,6 +14,12 @@ from pyspark.ml.classification import RandomForestClassifier
 from pyspark.ml.evaluation import MulticlassClassificationEvaluator
 from pyspark.ml.feature import StringIndexer, VectorAssembler
 from pyspark.ml.tuning import CrossValidator, ParamGridBuilder
+from pyspark.ml import Transformer
+from pyspark.ml.param.shared import *
+from pyspark.sql.functions import *
+from pyspark.sql import DataFrame
+from pyspark.sql.types import *
+from pyspark.ml.util import DefaultParamsReadable, DefaultParamsWritable
 
 # create a Spark session
 spark = SparkSession.builder \
