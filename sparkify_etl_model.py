@@ -97,8 +97,8 @@ def analysing_data(sc):
     min_count = min(churn_counts)
     mid_count = [x for x in churn_counts if x not in [max_count, min_count]][0]
     # Calculate weights
-    mid_ratio = 2 * 34.3 * min_count / mid_count
-    max_ratio = 2 * 34.3 * min_count / max_count
+    mid_ratio = 2 * 4.3 * min_count / mid_count
+    max_ratio = 2 * 4.3 * min_count / max_count
     # select the data based on the churns
     try:
         churn_0 = sc_cl.where(sc_cl.churn == 0).sample(withReplacement=False, fraction=max_ratio, seed=42)
@@ -119,15 +119,11 @@ def analysing_data(sc):
 
 
 class sparkify_model:
-    def __init__(self, features=['gender', 'itemInSession', 'level', 'length'],
-                 impurity=['gini', 'entropy'],
-                 maxDepth=[1, 3, 5]):
+    def __init__(self, features=['gender', 'itemInSession', 'level', 'length']):
         self.features = features
         self.label = 'churn'
-        self.impurity = impurity
-        self.maxDepth = maxDepth
 
-    def train_model(self, train_data, valid_data, output_path):
+    def train_model(self, train_data, valid_data):
         print('training model ...')
         # Assemble features into a single vector
         assembler = VectorAssembler(inputCols=self.features, outputCol='features')
@@ -137,10 +133,11 @@ class sparkify_model:
         pipeline = Pipeline(stages=[assembler, rf])
         # Set Up Cross-Validation
         # Define the parameter grid
-        paramGrid = ParamGridBuilder() \
-            .addGrid(rf.impurity, self.impurity) \
-            .addGrid(rf.maxDepth, self.maxDepth) \
-            .build()
+        paramGrid = (ParamGridBuilder()
+            .addGrid(rf.numTrees, [10, 20, 30])
+            .addGrid(rf.maxDepth, [5, 10, 15])
+            .addGrid(rf.maxBins, [32, 64, 128])
+            .build())
         # Define the evaluator
         evaluator = MulticlassClassificationEvaluator(
             labelCol='churn',
@@ -178,7 +175,7 @@ if __name__ == '__main__':
     train_data, valid_data, test_data = analysing_data(sc)
     # train data
     clf = sparkify_model()
-    model = clf.train_model(train_data, valid_data, output_path)
+    model = clf.train_model(train_data, valid_data)
     # save the model
     model.write().overwrite().save(output_path)
     # Archive the directory
