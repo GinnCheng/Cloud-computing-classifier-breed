@@ -1,6 +1,4 @@
-from pyspark.sql import SparkSession
-from pyspark.ml.pipeline import PipelineModel
-import pandas as pd
+# import libraries
 import pyspark
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, udf, count, sum as sql_sum, avg, when
@@ -9,28 +7,21 @@ from pyspark.ml.classification import LogisticRegression
 from pyspark.ml.evaluation import BinaryClassificationEvaluator
 import matplotlib.pyplot as plt
 import seaborn as sns
+from pyspark.ml import Pipeline
+from pyspark.ml.classification import RandomForestClassifier
+from pyspark.ml.evaluation import MulticlassClassificationEvaluator
+from pyspark.ml.feature import StringIndexer, VectorAssembler
+from pyspark.ml.tuning import CrossValidator, ParamGridBuilder
+import datetime
+from pyspark.ml.feature import StringIndexer, OneHotEncoder
+from pyspark.sql.functions import split, explode
+from pyspark.ml import PipelineModel
 
 # Initialize Spark session
 spark = SparkSession.builder.appName('FlaskApp').getOrCreate()
 
 # Load the pre-trained Spark model
 model = PipelineModel.load('model/your_spark_model_directory')
-
-def analyze_data(file_path):
-    # Read the CSV file into a Pandas DataFrame
-    data = pd.read_csv(file_path)
-
-    # Convert the Pandas DataFrame to a Spark DataFrame
-    spark_df = spark.createDataFrame(data)
-
-    # Make predictions
-    predictions = model.transform(spark_df)
-
-    # Convert predictions to Pandas DataFrame for easy rendering
-    predictions_df = predictions.toPandas()
-
-    # Return the results as HTML
-    return predictions_df.to_html()
 
 def analysing_data(file_path='./mini_sparkify_event_data.json', output_path='./bestModelFinal'):
 
