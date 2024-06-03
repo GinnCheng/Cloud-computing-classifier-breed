@@ -29,11 +29,11 @@ import shutil
 # Initialize Spark session
 spark = SparkSession.builder.appName('FlaskApp').getOrCreate()
 
-# Load the pre-trained Spark model
-shutil.unpack_archive("./final_model.zip", "./model")
-model = PipelineModel.load('./model')
+def predicting_users(file_path='./mini_sparkify_event_data.json', model_path="./final_model.zip"):
 
-def predicting_users(file_path='./mini_sparkify_event_data.json', output_path='./bestModelFinal'):
+    # Load the pre-trained Spark model
+    shutil.unpack_archive(model_path, "./model")
+    model = PipelineModel.load('./model')
 
     # read the data via spark
     print('reading the data ...')
@@ -85,7 +85,8 @@ def predicting_users(file_path='./mini_sparkify_event_data.json', output_path='.
     predictions_df = predictions.toPandas()
 
     # list the potential downgrade and cancel confirmation
-    predictions_df = predictions_df[predictions_df.churn in [1,2]]
+    predictions_df = predictions_df[predictions_df.churn_pred.isin([1, 2])]
+    predictions_df.drop(columns=['features', 'rawPrediction', 'probability'], inplace=True)
 
     # Return the results as HTML
     return predictions_df.to_html()
