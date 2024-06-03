@@ -168,7 +168,7 @@ class sparkify_model:
         print(f"Model Accuracy: {accuracy}")
         # save the model
         bestModel = cvModel.bestModel
-        bestModel.write().overwrite().save(output_path)
+        bestModel.write().overwrite().saveAsObjectFile(output_path)
 
 clf = sparkify_model()
 clf.train_model()
