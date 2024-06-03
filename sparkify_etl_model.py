@@ -1,3 +1,17 @@
+'''
+This script demonstrates a complete workflow for preprocessing data, training a machine learning model,
+and saving the model using PySpark. The example is focused on analyzing user behavior data from the
+Sparkify music streaming service to predict user churn.
+
+The script is divided into several parts:
+1. Library Imports
+2. Data Loading
+3. Data Wrangling Transformer Definition
+4. Model Training Class Definition
+5. Execution of the Pipeline
+'''
+
+
 # import libraries
 import pyspark
 from pyspark.sql import SparkSession
