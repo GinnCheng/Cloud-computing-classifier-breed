@@ -24,12 +24,15 @@ import datetime
 from pyspark.ml.feature import StringIndexer, OneHotEncoder
 from pyspark.sql.functions import split, explode
 from pyspark.ml import PipelineModel
+import pickle
 
 # Initialize Spark session
 spark = SparkSession.builder.appName('FlaskApp').getOrCreate()
 
 # Load the pre-trained Spark model
-model = PipelineModel.load('model/your_spark_model_directory')
+model_path = 'model/your_spark_model_directory'
+with open(model_path, 'rb') as f:
+    model = pickle.load(f)
 
 def predicting_users(file_path='./mini_sparkify_event_data.json', output_path='./bestModelFinal'):
 

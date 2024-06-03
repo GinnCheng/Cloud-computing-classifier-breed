@@ -33,15 +33,17 @@ from pyspark.ml.tuning import CrossValidator, ParamGridBuilder
 import datetime
 from pyspark.ml.feature import StringIndexer, OneHotEncoder
 from pyspark.sql.functions import split, explode
-
+import shutil
 
 def loading_data(file_path='./mini_sparkify_event_data.json', output_path='./bestModelFinal'):
     # read the data via spark
+    print('loading data ...')
     sc = spark.read.json(file_path)
     return sc, output_path
 
 
 def analysing_data(sc):
+    print('wrangling data ...')
     # Convert data types
     columns_to_cast = {
         "userId": "Integer",
@@ -83,7 +85,7 @@ def analysing_data(sc):
     # indexing the strings
     for col in ['gender', 'itemInSession', 'level', 'length']:
         if sc_cl.select(col).dtypes[0][1] == 'string':
-            print(col, ':', sc_cl.select(col).dtypes[0][1])
+            # print(col, ':', sc_cl.select(col).dtypes[0][1])
             indexer = StringIndexer(inputCol=col, outputCol=col + "_index")
             sc_cl = indexer.fit(sc_cl).transform(sc_cl)
             sc_cl = sc_cl.drop(col).withColumnRenamed(col + "_index", col)
@@ -120,6 +122,7 @@ class sparkify_model:
         self.maxDepth = maxDepth
 
     def train_model(self, train_data, valid_data, output_path):
+        print('training model ...')
         # Assemble features into a single vector
         assembler = VectorAssembler(inputCols=self.features, outputCol='features')
         # Define the classifier
@@ -152,7 +155,7 @@ class sparkify_model:
         print(f"Model Accuracy: {accuracy}")
         # save the model
         bestModel = cvModel.bestModel
-        bestModel.write().overwrite().saveAsObjectFile(output_path)
+        return bestModel
 
 
 if __name__ == '__main__':
@@ -162,12 +165,17 @@ if __name__ == '__main__':
         .getOrCreate()
 
     # load data
-    sc, output_path = loading_data()
+    file_path = './mini_sparkify_event_data.json'
+    output_path = './bestModelFinal'
+    sc, output_path = loading_data(file_path=file_path, output_path=output_path)
     # wrangle data
     train_data, valid_data, test_data = analysing_data(sc)
     # train data
     clf = sparkify_model()
-    clf.train_model(train_data, valid_data, output_path)
-
+    model = clf.train_model(train_data, valid_data, output_path)
+    # save the model
+    model.write().overwrite().save(output_path)
+    # Archive the directory
+    shutil.make_archive('final_model', 'zip', output_path)
     # Stop the Spark session
     spark.stop()
