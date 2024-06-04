@@ -26,7 +26,7 @@ from pyspark.ml.evaluation import BinaryClassificationEvaluator
 import matplotlib.pyplot as plt
 import seaborn as sns
 from pyspark.ml import Pipeline
-from pyspark.ml.classification import RandomForestClassifier
+from pyspark.ml.classification import RandomForestClassifier, GBTClassifier
 from pyspark.ml.evaluation import MulticlassClassificationEvaluator
 from pyspark.ml.feature import StringIndexer, VectorAssembler
 from pyspark.ml.tuning import CrossValidator, ParamGridBuilder
@@ -128,16 +128,15 @@ class sparkify_model:
         # Assemble features into a single vector
         assembler = VectorAssembler(inputCols=self.features, outputCol='features')
         # Define the classifier
-        rf = RandomForestClassifier(featuresCol='features', labelCol=self.label, predictionCol='churn_pred')
+        gbt = GBTClassifier(featuresCol='features', labelCol=self.label, predictionCol='churn_pred', maxIter=10)
         # Create the pipeline
-        pipeline = Pipeline(stages=[assembler, rf])
+        pipeline = Pipeline(stages=[assembler, gbt])
         # Set Up Cross-Validation
         # Define the parameter grid
         paramGrid = (ParamGridBuilder()
-            .addGrid(rf.numTrees, [10, 20, 30])
-            .addGrid(rf.maxDepth, [5, 10, 15])
-            .addGrid(rf.maxBins, [32, 64, 128])
-            .build())
+                     .addGrid(gbt.maxDepth, [5, 10])
+                     .addGrid(gbt.maxIter, [10, 20])
+                     .build())
         # Define the evaluator
         evaluator = MulticlassClassificationEvaluator(
             labelCol='churn',
@@ -179,6 +178,6 @@ if __name__ == '__main__':
     # save the model
     model.write().overwrite().save(output_path)
     # Archive the directory
-    shutil.make_archive('model_cv_rf', 'zip', output_path)
+    shutil.make_archive('model_cv_gbt', 'zip', output_path)
     # Stop the Spark session
     spark.stop()
