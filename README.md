@@ -22,6 +22,7 @@ The project uses the following architecture:
 3. **Model Training**: Training a machine learning model using PySpark's MLlib.
 4. **Model Evaluation**: Evaluating the model's performance using appropriate metrics.
 5. **Web Application**: Building a Flask web application to serve the model for real-time predictions.
+6. **Project Report**: Summarise the project workflow, results, conclusion and future improvement.
 
 ## General Analysis
 The general data processing is stated in Sparkify.ipynb and formatted in Sparkify.html
