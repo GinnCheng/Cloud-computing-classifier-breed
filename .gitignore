@@ -2,6 +2,6 @@ DataWrangling/*
 Hadoop/*
 MachineLearning/*
 .*/*
-
+models/
 Sparkify_app/model
 Sparkify_app/uploads
