@@ -23,9 +23,15 @@ The project uses the following architecture:
 4. **Model Evaluation**: Evaluating the model's performance using appropriate metrics.
 5. **Web Application**: Building a Flask web application to serve the model for real-time predictions.
 
+## General Analysis
+The general data processing is stated in Sparkify.ipynb and formatted in Sparkify.html
+
 ## Web Application
 
 A Flask web application is built to interact with the trained machine learning model. Users can submit their data through the web interface and get predictions about whether they are likely to churn.
+
+You can find the web app in Sparkify_app/
+The trained model is stored as Sparkify_app/final_model.zip
 
 ## Installation
 
@@ -41,10 +47,14 @@ To run this project locally, follow these steps:
     Ensure you have Apache Spark installed and configured. Follow the instructions on the [official Spark documentation](https://spark.apache.org/docs/latest/index.html).
 
 ## Usage
+- Download Sparkify_app directory
+- Run app.py
+- Go to the website shown in the running terminal
+- Upload the user dataset on the web as indicated
+- Waiting for the prediction
 
 ### Training the Model
 
 To train the model, run:
 
-```bash
-python sparkify_etl_model.py
+sparkify_etl_model.py
