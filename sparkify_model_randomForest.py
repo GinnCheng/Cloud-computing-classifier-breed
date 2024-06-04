@@ -134,9 +134,8 @@ class sparkify_model:
         # Set Up Cross-Validation
         # Define the parameter grid
         paramGrid = (ParamGridBuilder()
-            .addGrid(rf.numTrees, [10, 20, 30])
-            .addGrid(rf.maxDepth, [5, 10, 15])
-            .addGrid(rf.maxBins, [32, 64, 128])
+            .addGrid(rf.impurity, ['gini', 'entropy'])
+            .addGrid(rf.maxDepth, [5, 10])
             .build())
         # Define the evaluator
         evaluator = MulticlassClassificationEvaluator(
